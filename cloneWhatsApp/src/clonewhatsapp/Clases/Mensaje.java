@@ -6,6 +6,7 @@
 package clonewhatsapp.Clases;
 
 import java.util.Date;
+import javax.swing.JList;
 
 /**
  * Clase para encapsular la información del mensaje.

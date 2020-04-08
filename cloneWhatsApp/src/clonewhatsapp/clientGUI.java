@@ -6,16 +6,18 @@
 package clonewhatsapp;
 
 import com.google.gson.Gson;
-import clonewhatsapp.Clases.Mensaje;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -26,22 +28,90 @@ public class clientGUI extends javax.swing.JDialog {
     /**
      * Creates new form clientGUI
      */
-    
     private DataOutputStream dout;
     private DataInputStream din;
     private Gson gson;
     private clientSignInGUI clorox;
-    DefaultListModel dlm;
-    
+    CustomListModel dlm = new CustomListModel();
+    List<Mensaje> mikasa = new ArrayList<>();
+
     public clientGUI(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         init();
+    }    
+
+    public class Mensaje {
+
+        String usuario;
+        Date fecha;
+        String mensaje;
+
+        public Mensaje(String usuario, String mensaje, Date fecha) {
+            this.usuario = usuario;
+            this.mensaje = mensaje;
+            this.fecha = fecha;
+        }
+
+        public String getUsuario() {
+            return usuario;
+        }
+
+        public void setUsuario(String usuario) {
+            this.usuario = usuario;
+        }
+
+        public Date getFecha() {
+            return fecha;
+        }
+
+        public void setFecha(Date fecha) {
+            this.fecha = fecha;
+        }
+
+        public String getMensaje() {
+            return mensaje;
+        }
+
+        public void setMensaje(String mensaje) {
+            this.mensaje = mensaje;
+        }
     }
     
-     public void init(){
+    public class CustomListModel extends AbstractListModel {
+
+        private ArrayList Lista = new ArrayList<>();
+
+        @Override
+        public int getSize() {
+            return Lista.size();
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            Mensaje a1 = (Mensaje) Lista.get(index);
+            return a1.getUsuario();
+        }
+
+        public void agregarValores(Mensaje a1) {
+            Lista.add(a1);
+            this.fireIntervalAdded(this, getSize(), getSize() + 1);
+        }
+
+        public void quitarValores(int index) {
+            Lista.remove(index);
+            this.fireIntervalRemoved(index, getSize(), getSize() + 1);
+        }
+
+        public Mensaje getPersona(int index) {
+            return (Mensaje) Lista.get(index);
+        }
+    }
+
+    public void init() {
+        jList1.setModel(dlm);
         jLabel7.setIcon(new ImageIcon("img/iconouser.png"));
-        jLabel1.setText(""+clorox.usuario);
+        jLabel1.setText("" + clorox.usuario);
         gson = new Gson();
         try {
             conect();
@@ -49,6 +119,7 @@ public class clientGUI extends javax.swing.JDialog {
             Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -109,6 +180,11 @@ public class clientGUI extends javax.swing.JDialog {
         });
 
         jButton1.setText("Chatear");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jScrollPane3.setViewportView(jList1);
 
@@ -244,10 +320,8 @@ public class clientGUI extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
-    
-    private void conect() throws IOException
-    {
+
+    private void conect() throws IOException {
         din = new DataInputStream(clorox.socket.getInputStream());
         dout = new DataOutputStream(clorox.socket.getOutputStream());
         new Thread(() -> {
@@ -258,6 +332,7 @@ public class clientGUI extends javax.swing.JDialog {
             }
         }).start();
     }
+
     private void recibirInformacion() throws IOException {
         while (true) {
             String info = din.readUTF();
@@ -265,23 +340,42 @@ public class clientGUI extends javax.swing.JDialog {
             mostrarMensajesRecibidos(m);
         }
     }
-    
-    public void getInfo(clientSignInGUI tae)
-    {
+
+    public void getInfo(clientSignInGUI tae) {
         this.clorox = tae;
     }
-    
-   private void mostrarMensajesRecibidos(Mensaje m) {
-        jTextArea2.append(String.format("[%s]--> %s", m.getUsuario(), m.getMensaje())+"\n");
+
+    private void mostrarMensajesRecibidos(Mensaje m) {
+        jTextArea2.append(String.format("[%s]--> %s", m.getUsuario(), m.getMensaje()) + "\n");
     }
-   
+
     private void enviarMensaje() throws IOException {
-        Mensaje m =new Mensaje(clorox.usuario, jTextArea1.getText(), new Date());
+        Mensaje m = new Mensaje(clorox.usuario, jTextArea1.getText(), new Date());
         dout.writeUTF(gson.toJson(m));
         dout.flush();
         jTextArea1.setText("");
     }
     
+    private void add()
+    {
+        if (jTextField1.getText().equals("")) {
+            JOptionPane.showMessageDialog(null, "Llene de forma correcta todos lo campos");
+        } else {
+            if(jTextField1.getText()){}
+            mikasa.get(jList1.getSelectedIndex()).getUsuario();
+        }
+    }
+    
+    public boolean existeUser(Mensaje e){
+       
+        for(int i = 0; i < mikasa.size(); i++){
+            if(mikasa.get(i).getUsuario().equals(e.getUsuario())){
+                return true;
+            }
+        }
+    return false;
+    }
+
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
@@ -294,6 +388,11 @@ public class clientGUI extends javax.swing.JDialog {
             Logger.getLogger(clientGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        add();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments

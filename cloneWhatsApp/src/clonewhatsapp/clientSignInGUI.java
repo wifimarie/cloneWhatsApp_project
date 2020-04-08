@@ -5,6 +5,13 @@
  */
 package clonewhatsapp;
 
+import com.google.gson.Gson;
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import javax.swing.ImageIcon;
 
 /**
@@ -16,6 +23,9 @@ public class clientSignInGUI extends javax.swing.JDialog {
     /**
      * Creates new form clientSignInGUI
      */
+    static Socket socket;
+    static String usuario;
+    
     public clientSignInGUI(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -23,9 +33,43 @@ public class clientSignInGUI extends javax.swing.JDialog {
     }
     public void init(){
         jLabel1.setIcon(new ImageIcon("img/logo1.png"));
-        
+    }
+
+    
+    public String getUsuario() {
+        return usuario;
     }
      
+    
+    
+    private void conectar() throws IOException {
+        usuario = jTextField3.getText();
+        socket = new Socket(jTextField1.getText(), Integer.parseInt(jTextField2.getText()));
+        jToggleButton1.setText("Desconectar");
+        jToggleButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/stop.png")));
+        abrirclientGui();
+    }
+    
+    private void desconectar() throws IOException {
+        jToggleButton1.setText("Conectar");
+        jToggleButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/conectado.png")));
+        socket.close();
+    }
+    
+    private void conectarDesConectar() {
+        try {
+            if (jToggleButton1.isSelected()) {
+                conectar();
+            } else {
+                desconectar();
+            }
+        } catch (Exception ex) {
+            System.out.println("" + ex.getMessage());
+        }
+    }
+    
+    
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -39,14 +83,13 @@ public class clientSignInGUI extends javax.swing.JDialog {
         jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jToggleButton1 = new javax.swing.JToggleButton();
 
         jLabel2.setText("jLabel2");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setDisabledIcon(new javax.swing.ImageIcon("C:\\Users\\la famili\\Documents\\NetBeansProjects\\cloneWhatsApp\\img\\logo2.png")); // NOI18N
         jLabel1.setOpaque(true);
 
         jLabel3.setFont(new java.awt.Font("SF UI Text", 1, 14)); // NOI18N
@@ -58,9 +101,14 @@ public class clientSignInGUI extends javax.swing.JDialog {
 
         jLabel6.setText("Usuario:");
 
-        jButton1.setText("Conectar");
-
         jButton2.setText("Cancelar");
+
+        jToggleButton1.setText("Conectar");
+        jToggleButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -76,7 +124,7 @@ public class clientSignInGUI extends javax.swing.JDialog {
                         .addGap(19, 37, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -99,13 +147,12 @@ public class clientSignInGUI extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(22, 22, 22)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18))
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel3)
                         .addGap(41, 41, 41)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
@@ -119,13 +166,25 @@ public class clientSignInGUI extends javax.swing.JDialog {
                     .addComponent(jLabel6))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(jButton2)
+                    .addComponent(jToggleButton1))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void abrirclientGui()
+    {
+        Frame clientSignInGUI = null;
+        clientGUI cliente = new clientGUI(clientSignInGUI, true);
+        cliente.getInfo(this);
+        cliente.setVisible(true);
+    }
+    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+        // TODO add your handling code here:
+        conectarDesConectar();       
+    }//GEN-LAST:event_jToggleButton1ActionPerformed
 
    
     /**
@@ -171,7 +230,6 @@ public class clientSignInGUI extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -182,5 +240,6 @@ public class clientSignInGUI extends javax.swing.JDialog {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
+    private javax.swing.JToggleButton jToggleButton1;
     // End of variables declaration//GEN-END:variables
 }

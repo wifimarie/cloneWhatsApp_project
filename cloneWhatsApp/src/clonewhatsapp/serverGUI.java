@@ -5,6 +5,10 @@
  */
 package clonewhatsapp;
 
+import clonewhatsapp.Clases.ServidorComunicacion;
+import clonewhatsapp.Clases.TipoNotificacion;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Marie
@@ -14,10 +18,69 @@ public class serverGUI extends javax.swing.JFrame {
     /**
      * Creates new form serverGUI
      */
+    
+    private int conectados = 0;
+    
     public serverGUI() {
         initComponents();
     }
 
+    private void iniciar() {
+        try {
+            jToggleButton1.setText("Parar");
+            //jToggleButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/stop.png")));
+            //obteniendo el puerto:
+            int puerto = Integer.parseInt(jTextField1.getText());            
+            //subscribiendo a los eventos del servidor.
+            ServidorComunicacion.getInstacia().addObservadorListener((Class clase, Object argumento, Enum anEnum) -> {
+                eventosServidor(clase, argumento, anEnum);
+            });
+            //iniciando el servicio.
+            ServidorComunicacion.getInstacia().iniciarServidor(puerto);
+            
+        } catch (Exception e) {
+            JOptionPane.showConfirmDialog(this, "Error: " + e.getMessage());
+        }
+    }
+
+    public void eventosServidor(Class clase, Object argumento, Enum anEnum){
+        TipoNotificacion tn = (TipoNotificacion) anEnum;
+                switch (tn) {
+                    case LOG:
+                        jTextArea1.append((String) argumento + "\n");
+                        break;
+                    case CONEXION:
+                        conectados++;
+                        jLabel3.setText(""+conectados);
+                        break;
+                    case DESCONEXION:
+                        conectados--;
+                        jTextArea1.append("Cliente Des-conectado: "+conectados);                        
+                        break;
+                    default:
+                        System.out.println("Valor recibido no programado");
+                }
+    }
+
+    private void parar() {
+        jToggleButton1.setText("Iniciar");
+        //jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iconos/conectado.png")));
+        System.out.println("Parando el servido vista...");
+        ServidorComunicacion.getInstacia().pararServidor();
+    }
+    
+    private void procesoInicioParar() {
+        if (jToggleButton1.isSelected()) {
+            iniciar();
+        } else {
+            parar();
+        }
+    }
+
+    private void limpiarLogs() {
+        jTextArea1.setText("");
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -28,21 +91,24 @@ public class serverGUI extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
+        jTextField1 = new javax.swing.JTextField();
+        jToggleButton1 = new javax.swing.JToggleButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setText("Puerto Servidor:");
 
-        jButton1.setText("Conectar");
-
         jButton2.setText("Limpiar Logs");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Usuarios Conectados:");
 
@@ -51,6 +117,13 @@ public class serverGUI extends javax.swing.JFrame {
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
+
+        jToggleButton1.setText("Iniciar");
+        jToggleButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -66,12 +139,12 @@ public class serverGUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 369, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 406, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addComponent(jToggleButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         layout.setVerticalGroup(
@@ -80,9 +153,9 @@ public class serverGUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
+                    .addComponent(jButton2)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(jToggleButton1))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -93,6 +166,16 @@ public class serverGUI extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        limpiarLogs();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jToggleButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton1ActionPerformed
+        // TODO add your handling code here:
+        procesoInicioParar();
+    }//GEN-LAST:event_jToggleButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -130,7 +213,6 @@ public class serverGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -138,5 +220,6 @@ public class serverGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JToggleButton jToggleButton1;
     // End of variables declaration//GEN-END:variables
 }
